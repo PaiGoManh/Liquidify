@@ -1,35 +1,78 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React,{useState} from "react";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import AddTokens from "./Components/AddTokens";
+import LiquidityPool from "./Components/LiquidityPool";
+import Swap from "./Components/Swap";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const [walletAddress, setWalletAddress] = useState(""); 
 
+  const connectWallet = async () => {
+    if (window.ethereum) {
+      try {
+        // Request accounts from MetaMask
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+        setWalletAddress(accounts[0]);
+        console.log("Connected account:", accounts[0]);
+      } catch (error) {
+        console.error("Error connecting to wallet:", error);
+      }
+    } else {
+      alert("MetaMask not found. Please install MetaMask to use this app.");
+    }
+  };
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+      <Router>
+        <div className="w-screen h-screen bg-gray-800">
+          <div className="mx-[5%] py-[3%] flex text-white justify-between">
+            <div className="font-bold text-3xl ">Peer2Play</div>
+            <div className="flex gap-5 ">
+              {/* <Link to="/token">
+                <button className="w-[150px] h-10 bg-black ring-2 ring-white text-l font-bold  ">
+                  Add Tokens
+                </button>
+              </Link> */}
+              
+              <Link to="/swap">
+                <button className="w-[150px] h-10 bg-black ring-2 ring-white text-l font-bold  ">
+                  Swap
+                </button>
+              </Link>
+              <Link to="/pool">
+                <button className="w-[150px] h-10 bg-black ring-2 ring-white text-l font-bold  ">
+                  Liquidity Pool
+                </button>
+              </Link>
+            </div>
+            {walletAddress ? (
+              <div className="w-[250px] h-10 bg-green-500 text-white text-center flex items-center justify-center">
+                Connected: {walletAddress.slice(0, 6)}...
+                {walletAddress.slice(-4)}
+              </div>
+            ) : (
+              <button
+                className="w-[130px] h-10 bg-blue-500 ring-2 ring-white"
+                onClick={connectWallet}
+              >
+                Connect Wallet
+              </button>
+            )}
+          </div>
 
-export default App
+          <div className="text-white mx-[5%]">
+            <Routes>
+              <Route path="/token" element={<AddTokens />} />
+              <Route path="/pool" element={<LiquidityPool />} />
+              <Route path="/swap" element={<Swap />} />
+            </Routes>
+          </div>
+        </div>
+      </Router>
+    </>
+  );
+};
+
+export default App;

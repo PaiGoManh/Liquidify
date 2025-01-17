@@ -11,7 +11,6 @@ const App = () => {
   const connectWallet = async () => {
     if (window.ethereum) {
       try {
-        // Request accounts from MetaMask
         const accounts = await window.ethereum.request({
           method: "eth_requestAccounts",
         });
@@ -27,35 +26,36 @@ const App = () => {
   return (
     <>
       <Router>
-        <div className="w-screen h-screen bg-gray-800">
+        <div className="w-screen h-screen bg-blue-200">
           <div className="mx-[5%] py-[3%] flex text-white justify-between">
-            <div className="font-bold text-3xl text-purple-700">Peer2Play</div>
-            <div className="flex gap-5 ">
+            <div className="font-bold text-3xl text-black">Peer2Play</div>
+            <div className="flex gap-5 -mr-10">
+              
               {/* <Link to="/token">
                 <button className="w-[150px] h-10 bg-black ring-2 ring-white text-l font-bold  ">
                   Tokens
                 </button>
               </Link> */}
               
-              <Link to="/swap">
-                <button className="w-[150px] h-10 bg-black ring-2 ring-purple-700 text-l font-bold  ">
+              <Link to="/">
+                <button className="w-[150px] h-10 bg-purple-700 ring-2 ring-purple-700 text-l font-bold rounded-full ">
                   Swap
                 </button>
               </Link>
               <Link to="/add">
-                <button className="w-[150px] h-10 bg-black ring-2 ring-purple-700 text-l font-bold  ">
+                <button className="w-[150px] h-10 bg-purple-700 ring-2 ring-purple-700 text-l font-bold rounded-full ">
                   Add Liquidity
                 </button>
               </Link>
 
               <Link to="/remove">
-                <button className="w-[150px] h-10 bg-black ring-2 ring-purple-700 text-l font-bold  ">
+                <button className="w-[150px] h-10 bg-purple-700 ring-2 ring-purple-700 text-l font-bold rounded-full ">
                   Remove Liquidity
                 </button>
               </Link>
             </div>
             {walletAddress ? (
-              <div className="w-[250px] h-10 bg-purple-700 text-white text-center flex items-center justify-center hover:bg-black">
+              <div className="-mr-10 w-[250px] h-10 bg-purple-700 text-white text-center flex items-center justify-center hover:bg-black">
                 Connected: {walletAddress.slice(0, 6)}...
                 {walletAddress.slice(-4)}
               </div>
@@ -73,7 +73,7 @@ const App = () => {
             <Routes>
               <Route path="/token" element={<TokenList />} />
               <Route path="/add" element={<AddLiquidity />} />
-              <Route path="/swap" element={<Swap />} />
+              <Route path="/" element={<Swap />} />
               <Route path="/remove" element={<RemoveLiquidity/>} />
 
             </Routes>

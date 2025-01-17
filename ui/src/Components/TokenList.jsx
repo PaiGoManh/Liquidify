@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
-import Token1ABI from "../Token1.json";
-import Token2ABI from "../Token2.json";
+import Token1ABI from "../TokenA.json";
+import Token2ABI from "../TokenB.json";
 
 // Addresses of the deployed contracts
 const token1Address = "0xdCb6045799274EA34f4cfCa7e60880420F45bA58";

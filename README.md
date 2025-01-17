@@ -1,4 +1,4 @@
-# Liquidity Pool Integration 
+# Liquidify
 
 This project is a **Decentralized Automated Market Maker (AMM)** implemented as a smart contract in Solidity. It allows users to add liquidity, remove liquidity, and swap tokens between two ERC-20 compatible tokens. This AMM applies a constant product formula and charges a fee for swaps, following the principles of decentralized exchanges like Uniswap.
 

@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
+import { useTokens } from '../Context/TokenContext';
+import { useNavigate } from 'react-router-dom';
 
 const AddLiquidity = () => {
-
   const [account, setAccount] = useState('');
   const [loading, setLoading] = useState(false);
   const [amount1, setAmount1] = useState('');
   const [amount2, setAmount2] = useState('');
   const [token1Balance, setToken1Balance] = useState('0');
   const [token2Balance, setToken2Balance] = useState('0');
+  const { tokens } = useTokens();
+  const navigate = useNavigate();
 
   const TOKEN_A_ADDRESS = "0xA3183705B6A60A68EE15eF01714F5851C4720Bcf";
   const TOKEN_B_ADDRESS = "0xEc73ef4F29373A492dB5350e925B8847334A8a84";
@@ -77,6 +80,8 @@ const AddLiquidity = () => {
       const tx = await liquidityPool.addLiquidity(amount1Wei, amount2Wei);
       await tx.wait();
 
+      navigate('/pool');
+
       setAmount1('');
       setAmount2('');
       await fetchBalances(account);
@@ -106,13 +111,11 @@ const AddLiquidity = () => {
       </div>
 
       <div className="mb-6">
-        <h3 className="text-lg font-medium mb-2 text-black">Token Pair</h3>
-        <div className="flex items-center gap-4">
-          <div className="p-2 border rounded-lg w-full text-black">Token A</div>
-          <span className="text-2xl text-black">+</span>
-          <div className="p-2 border rounded-lg w-full text-black">Token B</div>
+        <h3 className="text-lg font-medium mb-2 text-black">Tokens</h3>
+        <div className="">
+          <div className="p-2 border rounded-lg w-full text-black">{tokens.tokenA?.name}({tokens.tokenA?.symbol})</div>
+          <div className="p-2 border rounded-lg w-full text-black">{tokens.tokenB?.name}({tokens.tokenB?.symbol})</div>
         </div>
-        <p className="text-sm text-gray-600 mt-2">V2 LP - 0.25% fee tier</p>
       </div>
 
       <div className="mb-6">
@@ -121,7 +124,7 @@ const AddLiquidity = () => {
           <div className="relative">
             <div className="flex justify-between">
               <label className="block mb-1 text-gray-700">Token A</label>
-              <span className="text-sm text-gray-500">Balance: {token1Balance}</span>
+              <span className="text-sm text-gray-500">{token1Balance}</span>
             </div>
             <input
               type="number"
@@ -134,7 +137,7 @@ const AddLiquidity = () => {
           <div className="relative">
             <div className="flex justify-between">
               <label className="block mb-1 text-gray-700">Token B</label>
-              <span className="text-sm text-gray-500">Balance: {token2Balance}</span>
+              <span className="text-sm text-gray-500">{token2Balance}</span>
             </div>
             <input
               type="number"

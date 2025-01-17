@@ -1,9 +1,12 @@
-import React,{useState} from "react";
+import React,{ useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Swap from "./Components/Swap";
 import TokenList from "./Components/TokenList";
 import AddLiquidity from "./Components/AddLiquidity";
 import RemoveLiquidity from "./Components/RemoveLiquidity";
+import Pool from "./Components/Pool";
+import PoolDetails from "./Components/Pooldetails";
+import { TokenProvider } from './Context/TokenContext';
 
 const App = () => {
   const [walletAddress, setWalletAddress] = useState(""); 
@@ -25,12 +28,13 @@ const App = () => {
   };
   return (
     <>
+     <TokenProvider>
       <Router>
         <div className="w-screen h-screen bg-blue-200">
           <div className="mx-[5%] py-[3%] flex text-white justify-between">
             <div className="font-bold text-3xl text-black">Peer2Play</div>
             <div className="flex gap-5 -mr-10">
-              
+
               {/* <Link to="/token">
                 <button className="w-[150px] h-10 bg-black ring-2 ring-white text-l font-bold  ">
                   Tokens
@@ -42,7 +46,14 @@ const App = () => {
                   Swap
                 </button>
               </Link>
-              <Link to="/add">
+
+              <Link to="/pool">
+                <button className="w-[150px] h-10 bg-purple-700 ring-2 ring-purple-700 text-l font-bold rounded-full ">
+                  Pool
+                </button>
+              </Link>
+
+              {/* <Link to="/add">
                 <button className="w-[150px] h-10 bg-purple-700 ring-2 ring-purple-700 text-l font-bold rounded-full ">
                   Add Liquidity
                 </button>
@@ -52,7 +63,8 @@ const App = () => {
                 <button className="w-[150px] h-10 bg-purple-700 ring-2 ring-purple-700 text-l font-bold rounded-full ">
                   Remove Liquidity
                 </button>
-              </Link>
+              </Link> */}
+
             </div>
             {walletAddress ? (
               <div className="-mr-10 w-[250px] h-10 bg-purple-700 text-white text-center flex items-center justify-center hover:bg-black">
@@ -75,11 +87,14 @@ const App = () => {
               <Route path="/add" element={<AddLiquidity />} />
               <Route path="/" element={<Swap />} />
               <Route path="/remove" element={<RemoveLiquidity/>} />
+              <Route path="/pool" element={<Pool/>} />
+              <Route path="/pool/:poolAddress" element={<PoolDetails />} />
 
             </Routes>
           </div>
         </div>
       </Router>
+      </TokenProvider>
     </>
   );
 };

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 
 const RemoveLiquidity = () => {
-
   const [account, setAccount] = useState('');
   const [loading, setLoading] = useState(false);
   const [percentage, setPercentage] = useState(50);
@@ -11,6 +10,8 @@ const RemoveLiquidity = () => {
   const [withdrawAmount2, setWithdrawAmount2] = useState('0');
 
   const LIQUIDITY_POOL_ADDRESS = "0x6B4ccdb95cb023b040A7c9aAc5dae986f8AC2976";
+  const TOKEN_A_ADDRESS = "0xA3183705B6A60A68EE15eF01714F5851C4720Bcf";
+  const TOKEN_B_ADDRESS = "0xEc73ef4F29373A492dB5350e925B8847334A8a84";
 
   const connectWallet = async () => {
     try {
@@ -161,39 +162,25 @@ const RemoveLiquidity = () => {
         <p className="text-gray-600 mt-2 text-sm">Selected: {percentage}%</p>
       </div>
 
-      <div className="mb-2">
+      <div className="mb-3">
         <h3 className="text-md font-medium mb-2 text-black">Withdraw Amount</h3>
-        <div className="flex gap-5">
-          <div className="relative">
-            <label className="block mb-1 text-gray-700 text-md">Token A</label>
-            <input
-              type="text"
-              className="w-full p-3 border rounded-lg"
-              value={withdrawAmount1}
-              readOnly
-            />
-          </div>
-          <div className="relative">
-            <label className="block mb-1 text-gray-700">Token B</label>
-            <input
-              type="text"
-              className="w-full p-3 border rounded-lg"
-              value={withdrawAmount2}
-              readOnly
-            />
-          </div>
+        <div className="flex justify-between">
+          <span className="text-black">Token A: {withdrawAmount1}</span>
+          <span className="text-black">Token B: {withdrawAmount2}</span>
         </div>
       </div>
 
-      <button
-        onClick={handleRemoveLiquidity}
-        className={`w-full mt-4 p-3 rounded-lg text-white ${
-          loading ? 'bg-gray-500 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'
-        }`}
-        disabled={loading}
-      >
-        {loading ? 'Processing...' : 'Remove Liquidity'}
-      </button>
+      <div className="flex justify-center mt-8">
+        <button
+          className={`bg-purple-700 text-white px-6 py-3 rounded-lg w-full ${
+            loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-800'
+          }`}
+          onClick={handleRemoveLiquidity}
+          disabled={loading || !account || percentage === 0}
+        >
+          {loading ? 'Removing Liquidity...' : 'Remove Liquidity'}
+        </button>
+      </div>
     </div>
   );
 };

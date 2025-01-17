@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
+import { abi as contractABI } from '../Liquidity.json';
+
+const CONTRACT_ADDRESS = "0x53f1e235929dFBaA28bFb962D12B56f8fc48Cc12";
 
 const RemoveLiquidity = () => {
   const [account, setAccount] = useState('');
@@ -8,10 +11,8 @@ const RemoveLiquidity = () => {
   const [userShares, setUserShares] = useState('0');
   const [withdrawAmount1, setWithdrawAmount1] = useState('0');
   const [withdrawAmount2, setWithdrawAmount2] = useState('0');
-
-  const LIQUIDITY_POOL_ADDRESS = "0x6B4ccdb95cb023b040A7c9aAc5dae986f8AC2976";
-  const TOKEN_A_ADDRESS = "0xA3183705B6A60A68EE15eF01714F5851C4720Bcf";
-  const TOKEN_B_ADDRESS = "0xEc73ef4F29373A492dB5350e925B8847334A8a84";
+  const [error, setError] = useState('');
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const connectWallet = async () => {
     try {
@@ -20,98 +21,120 @@ const RemoveLiquidity = () => {
           method: 'eth_requestAccounts'
         });
         setAccount(accounts[0]);
-        await fetchUserShares(accounts[0]);
       } else {
-        alert('Please install MetaMask!');
+        throw new Error('Please install MetaMask!');
       }
     } catch (error) {
       console.error('Error connecting wallet:', error);
+      setError(error.message || 'Failed to connect wallet');
     }
   };
 
-  const fetchUserShares = async (userAccount) => {
+  const fetchPoolData = async (userAccount) => {
+    if (!userAccount) return;
+    
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const liquidityPool = new ethers.Contract(LIQUIDITY_POOL_ADDRESS, [
-        "function shares(address) view returns (uint256)",
-        "function getReserves() view returns (uint256, uint256)",
-        "function totalShares() view returns (uint256)"
-      ], provider);
+      const liquidityPool = new ethers.Contract(CONTRACT_ADDRESS, contractABI, provider);
 
-      const shares = await liquidityPool.shares(userAccount);
-      const [reserve1, reserve2] = await liquidityPool.getReserves();
-      const totalShares = await liquidityPool.totalShares();
+      const [
+        userSharesBN,
+        reserve1BN,
+        reserve2BN,
+        totalSharesBN
+      ] = await Promise.all([
+        liquidityPool.shares(userAccount),
+        liquidityPool.reserve1(),
+        liquidityPool.reserve2(),
+        liquidityPool.totalShares()
+      ]);
 
-      setUserShares(ethers.utils.formatEther(shares));
+      setUserShares(ethers.utils.formatEther(userSharesBN));
 
-      const sharesToWithdraw = shares.mul(percentage).div(100);
-      const amount1 = reserve1.mul(sharesToWithdraw).div(totalShares);
-      const amount2 = reserve2.mul(sharesToWithdraw).div(totalShares);
+      // Only calculate withdrawal amounts if user has shares
+      if (!userSharesBN.isZero()) {
+        const sharesToWithdraw = userSharesBN.mul(percentage).div(100);
+        const amount1 = reserve1BN.mul(sharesToWithdraw).div(totalSharesBN);
+        const amount2 = reserve2BN.mul(sharesToWithdraw).div(totalSharesBN);
 
-      setWithdrawAmount1(ethers.utils.formatEther(amount1));
-      setWithdrawAmount2(ethers.utils.formatEther(amount2));
+        setWithdrawAmount1(ethers.utils.formatEther(amount1));
+        setWithdrawAmount2(ethers.utils.formatEther(amount2));
+      }
+      
+      setIsInitialized(true);
     } catch (error) {
-      console.error('Error fetching user shares:', error);
+      console.error('Error fetching pool data:', error);
+      setError('Failed to fetch pool data. Please check your connection and try again.');
     }
   };
 
   const handlePercentageChange = async (newPercentage) => {
+    if (!account || !isInitialized) return;
+    
     setPercentage(newPercentage);
-    if (account) {
-      try {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const liquidityPool = new ethers.Contract(LIQUIDITY_POOL_ADDRESS, [
-          "function shares(address) view returns (uint256)",
-          "function getReserves() view returns (uint256, uint256)",
-          "function totalShares() view returns (uint256)"
-        ], provider);
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const liquidityPool = new ethers.Contract(CONTRACT_ADDRESS, contractABI, provider);
 
-        const shares = await liquidityPool.shares(account);
-        const [reserve1, reserve2] = await liquidityPool.getReserves();
-        const totalShares = await liquidityPool.totalShares();
+      const [userSharesBN, reserve1BN, reserve2BN, totalSharesBN] = await Promise.all([
+        liquidityPool.shares(account),
+        liquidityPool.reserve1(),
+        liquidityPool.reserve2(),
+        liquidityPool.totalShares()
+      ]);
 
-        const sharesToWithdraw = shares.mul(newPercentage).div(100);
-        const amount1 = reserve1.mul(sharesToWithdraw).div(totalShares);
-        const amount2 = reserve2.mul(sharesToWithdraw).div(totalShares);
+      if (!userSharesBN.isZero()) {
+        const sharesToWithdraw = userSharesBN.mul(newPercentage).div(100);
+        const amount1 = reserve1BN.mul(sharesToWithdraw).div(totalSharesBN);
+        const amount2 = reserve2BN.mul(sharesToWithdraw).div(totalSharesBN);
 
         setWithdrawAmount1(ethers.utils.formatEther(amount1));
         setWithdrawAmount2(ethers.utils.formatEther(amount2));
-      } catch (error) {
-        console.error('Error calculating withdraw amounts:', error);
       }
+    } catch (error) {
+      console.error('Error calculating withdraw amounts:', error);
+      setError('Failed to calculate withdrawal amounts');
     }
   };
 
   const handleRemoveLiquidity = async () => {
-    if (!account || percentage === 0) return;
+    if (!account || percentage === 0 || !isInitialized) return;
 
     try {
       setLoading(true);
+      setError('');
+      
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-
-      const liquidityPool = new ethers.Contract(LIQUIDITY_POOL_ADDRESS, [
-        "function shares(address) view returns (uint256)",
-        "function removeLiquidity(uint256) external returns (uint256, uint256)"
-      ], signer);
+      const liquidityPool = new ethers.Contract(CONTRACT_ADDRESS, contractABI, signer);
 
       const userSharesBN = await liquidityPool.shares(account);
       const sharesToWithdraw = userSharesBN.mul(percentage).div(100);
 
+      // Estimate gas to check if transaction will fail
+      try {
+        await liquidityPool.estimateGas.removeLiquidity(sharesToWithdraw);
+      } catch (error) {
+        throw new Error('Transaction will fail. Please check your shares and try again.');
+      }
+
       const tx = await liquidityPool.removeLiquidity(sharesToWithdraw);
       await tx.wait();
 
-      await fetchUserShares(account);
+      // Refresh data after successful removal
+      await fetchPoolData(account);
       setLoading(false);
+      setPercentage(50);
     } catch (error) {
       console.error('Error removing liquidity:', error);
       setLoading(false);
+      setError(error.message || 'Failed to remove liquidity');
     }
   };
 
   useEffect(() => {
     if (account) {
-      fetchUserShares(account);
+      fetchPoolData(account);
     }
   }, [account]);
 
@@ -127,29 +150,16 @@ const RemoveLiquidity = () => {
         </button>
       </div>
 
-      <div className="mb-2">
-        <h3 className="text-lg font-medium mb-2 text-black">Token Pair</h3>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="text-black bg-yellow-300 w-10 h-10 rounded-full flex items-center justify-center">
-              <span>🪙</span>
-            </div>
-            <span className="text-black">Token A</span>
-          </div>
-          <span className="text-2xl">+</span>
-          <div className="flex items-center gap-2">
-            <div className="bg-green-300 w-10 h-10 rounded-full flex items-center justify-center">
-              <span>🪙</span>
-            </div>
-            <span className="text-black">Token B</span>
-          </div>
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+          {error}
         </div>
-      </div>
+      )}
 
-      <div className="mb-3">
+      <div className="mb-6">
         <div className="flex justify-between">
-          <h3 className="text-md font-medium mb-2 text-black">Your Liquidity</h3>
-          <span className="text-sm text-gray-600">Total Shares: {userShares}</span>
+          <h3 className="text-md font-medium mb-2 text-black">Your Shares</h3>
+          <span className="text-sm text-gray-600">{userShares}</span>
         </div>
         <input
           type="range"
@@ -157,30 +167,41 @@ const RemoveLiquidity = () => {
           max="100"
           value={percentage}
           onChange={(e) => handlePercentageChange(Number(e.target.value))}
-          className="w-full"
+          className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
+          disabled={!isInitialized || !account}
         />
-        <p className="text-gray-600 mt-2 text-sm">Selected: {percentage}%</p>
-      </div>
-
-      <div className="mb-3">
-        <h3 className="text-md font-medium mb-2 text-black">Withdraw Amount</h3>
-        <div className="flex justify-between">
-          <span className="text-black">Token A: {withdrawAmount1}</span>
-          <span className="text-black">Token B: {withdrawAmount2}</span>
+        <div className="flex justify-between mt-2">
+          <span className="text-sm text-gray-600">0%</span>
+          <span className="text-sm text-purple-600 font-medium">{percentage}%</span>
+          <span className="text-sm text-gray-600">100%</span>
         </div>
       </div>
 
-      <div className="flex justify-center mt-8">
-        <button
-          className={`bg-purple-700 text-white px-6 py-3 rounded-lg w-full ${
-            loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-800'
-          }`}
-          onClick={handleRemoveLiquidity}
-          disabled={loading || !account || percentage === 0}
-        >
-          {loading ? 'Removing Liquidity...' : 'Remove Liquidity'}
-        </button>
+      <div className="bg-white p-4 rounded-lg mb-6">
+        <h3 className="text-md font-medium mb-3 text-black">You Will Receive</h3>
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Token 1</span>
+            <span className="text-black font-medium">{withdrawAmount1}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Token 2</span>
+            <span className="text-black font-medium">{withdrawAmount2}</span>
+          </div>
+        </div>
       </div>
+
+      <button
+        className={`w-full py-3 rounded-lg font-medium ${
+          loading || !account || percentage === 0 || !isInitialized
+            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            : 'bg-purple-600 text-white hover:bg-purple-700'
+        }`}
+        onClick={handleRemoveLiquidity}
+        disabled={loading || !account || percentage === 0 || !isInitialized}
+      >
+        {loading ? 'Removing Liquidity...' : 'Remove Liquidity'}
+      </button>
     </div>
   );
 };

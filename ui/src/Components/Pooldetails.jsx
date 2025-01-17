@@ -1,124 +1,180 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ethers } from 'ethers';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { ethers } from "ethers";
+import { Link } from "react-router-dom";
 import { abi as contractABI } from '../Liquidity.json';
 
 const PoolDetails = () => {
-  const { poolAddress } = useParams(); // Get the pool address from the URL params
-  const navigate = useNavigate();
+  const [isSwapOpen, setIsSwapOpen] = useState(false);
+  const [amountToSwap, setAmountToSwap] = useState(0);
+  const [selectedToken, setSelectedToken] = useState("TokenA"); // Default to TokenA
+  const location = useLocation();
+  const poolData = location.state;
+  console.log(poolData);
 
-  const [poolData, setPoolData] = useState(null);
-  const [token1Data, setToken1Data] = useState(null);
-  const [token2Data, setToken2Data] = useState(null);
-  const [provider, setProvider] = useState(null);
-  const [contract, setContract] = useState(null);
+  // Initialize the provider and contract (add your contract address and ABI here)
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const signer = provider.getSigner();
+  const contractAddress = "0x53f1e235929dFBaA28bFb962D12B56f8fc48Cc12";  // Replace with actual contract address
+  const contract = new ethers.Contract(contractAddress, contractABI, signer);
 
-  const contractAddress = "0x6B4ccdb95cb023b040A7c9aAc5dae986f8AC2976"; // Replace with your contract address
+  // Swap functionality
+  const handleSwap = async () => {
+    try {
+      if (amountToSwap <= 0) {
+        alert("Please enter a valid amount.");
+        return;
+      }
 
-  useEffect(() => {
-    const setupProvider = async () => {
-      const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = web3Provider.getSigner();
-      const liquidityPoolContract = new ethers.Contract(contractAddress, contractABI, signer);
-      setProvider(web3Provider);
-      setContract(liquidityPoolContract);
-    };
-    setupProvider();
-  }, []);
+      // Check which token the user wants to swap
+      const fromToken = selectedToken === "TokenA" ? poolData.token1 : poolData.token2;
+      const amountIn = ethers.utils.parseUnits(amountToSwap.toString(), 18); // Assuming 18 decimals
 
-  useEffect(() => {
-    if (contract) {
-      fetchPoolDetails();
+      // Call the swap function in the contract
+      const tx = await contract.swap(fromToken, amountIn);
+      await tx.wait();
+      alert("Swap successful!");
+      setIsSwapOpen(false);
+    } catch (error) {
+      console.error("Swap failed:", error);
+      alert("Swap failed. Please try again.");
     }
-  }, [contract]);
-
-  const fetchPoolDetails = async () => {
-    const poolContract = new ethers.Contract(poolAddress, contractABI, provider);
-    const reserves = await poolContract.getReserves();
-    
-    // Get token contract addresses from the liquidity pool contract
-    const token1Address = await poolContract.token1();
-    const token2Address = await poolContract.token2();
-
-    // Get token data
-    const token1 = new ethers.Contract(token1Address, ["function name() view returns (string)", "function symbol() view returns (string)", "function decimals() view returns (uint8)"], provider);
-    const token2 = new ethers.Contract(token2Address, ["function name() view returns (string)", "function symbol() view returns (string)", "function decimals() view returns (uint8)"], provider);
-
-    const token1Name = await token1.name();
-    const token1Symbol = await token1.symbol();
-    const token1Decimals = await token1.decimals();
-
-    const token2Name = await token2.name();
-    const token2Symbol = await token2.symbol();
-    const token2Decimals = await token2.decimals();
-
-    const liquidity = ethers.utils.formatUnits(reserves[0], token1Decimals); // Format according to token1 decimals
-
-    setToken1Data({
-      name: token1Name,
-      symbol: token1Symbol,
-      decimals: token1Decimals,
-    });
-
-    setToken2Data({
-      name: token2Name,
-      symbol: token2Symbol,
-      decimals: token2Decimals,
-    });
-
-    setPoolData({
-      address: poolAddress,
-      liquidity,
-      token1: token1Symbol,
-      token2: token2Symbol,
-      reserves: reserves.map((reserve, index) =>
-        ethers.utils.formatUnits(reserve, index === 0 ? token1Decimals : token2Decimals)
-      ),
-    });
   };
 
-  const addLiquidity = () => {
-    navigate('/add'); // Navigate to Add Liquidity page
-  };
+  const SwapModal = () =>
+    isSwapOpen && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Swap Tokens</h3>
+            <button
+              onClick={() => setIsSwapOpen(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm text-gray-600">From</label>
+              <input
+                type="number"
+                placeholder="0.0"
+                value={amountToSwap}
+                onChange={(e) => setAmountToSwap(e.target.value)}
+                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none text-black"
+              />
+              <select
+                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none text-white bg-purple-700"
+                onChange={(e) => setSelectedToken(e.target.value)}
+              >
+                <option value="TokenA">{poolData.token1Name}</option>
+                <option value="TokenB">{poolData.token2Name}</option>
+              </select>
+            </div>
+            <button className="w-full p-2 text-gray-600 hover:bg-gray-100 rounded">
+              ↑↓
+            </button>
+            <div className="space-y-2">
+              <label className="text-sm text-gray-600">To</label>
+              <input
+                type="number"
+                value={0.0}
+                readOnly
+                className="text-black w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+              <select
+                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                disabled
+              >
+                <option value={selectedToken === "TokenA" ? "TokenB" : "TokenA"}>
+                  {selectedToken === "TokenA" ? poolData.token2Name : poolData.token1Name}
+                </option>
+              </select>
+            </div>
+            <button
+              onClick={handleSwap}
+              className="w-full bg-purple-700 text-white p-2 rounded hover:bg-pink-600 transition-colors"
+            >
+              Swap
+            </button>
+          </div>
+        </div>
+      </div>
+    );
 
   return (
-    <div className="p-4 space-y-6">
-      {poolData ? (
-        <>
-          {/* Header Section */}
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-xl font-bold">{poolData.address}</h1>
-              <p className="text-gray-500">Liquidity: {poolData.liquidity}</p>
-            </div>
-            <div className="flex space-x-2">
-              <button onClick={addLiquidity} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                Add Liquidity
-              </button>
-            </div>
+    <div className="p-6 max-w-4xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center">
+            <div className="h-8 w-8 rounded-full bg-[gold]"></div>
+            <h1 className="text-2xl font-bold ml-2 text-black">
+              {poolData.token1Name}/{poolData.token2Name}
+            </h1>
           </div>
+        </div>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setIsSwapOpen(true)}
+            className="flex items-center px-4 py-2 bg-pink-50 text-pink-500 rounded hover:bg-pink-100 transition-colors"
+          >
+            ↑↓ Swap
+          </button>
+          <Link to='/add'>
+            <button className="flex items-center px-4 py-2 bg-pink-50 text-pink-500 rounded hover:bg-pink-100 transition-colors">
+              + Add liquidity
+            </button>
+          </Link>
+          <Link to='/remove'>
+            <button className="flex items-center px-4 py-2 bg-pink-50 text-pink-500 rounded hover:bg-pink-100 transition-colors">
+              - Remove liquidity
+            </button>
+          </Link>
+        </div>
+      </div>
 
-          <div className="bg-white p-6 rounded shadow">
-            <h3 className="text-lg font-semibold mb-4">Pool Stats</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span>Liquidity</span>
-                <span>{poolData.liquidity} {poolData.token1}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Token 1: {token1Data.name} ({token1Data.symbol})</span>
-                <span>Reserves: {poolData.reserves[0]} {poolData.token1}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Token 2: {token2Data.name} ({token2Data.symbol})</span>
-                <span>Reserves: {poolData.reserves[1]} {poolData.token2}</span>
-              </div>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold mb-4 text-black">Token A</h2>
+          <div className="space-y-2">
+            <p className="text-gray-700">
+              <strong>Token A:</strong> {poolData.token1Name}
+            </p>
+            <p className="text-gray-700">
+              <strong>Reserve:</strong>{" "}
+              {ethers.utils.formatUnits(poolData.reserve1, 18)}{" "}
+              {poolData.token1Name}
+            </p>
+            <p className="text-gray-700">
+              <strong>Amount:</strong> {poolData.amount1}
+            </p>
           </div>
-        </>
-      ) : (
-        <p>Loading pool details...</p>
-      )}
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold mb-4 text-black">Token B</h2>
+          <div className="space-y-4">
+            <p className="text-gray-700">
+              <strong>Token B:</strong> {poolData.token2Name}
+            </p>
+            <p className="text-gray-700">
+              <strong>Reserve:</strong>{" "}
+              {ethers.utils.formatUnits(poolData.reserve2, 18)}{" "}
+              {poolData.token2Name}
+            </p>
+            <p className="text-gray-700">
+              <strong>Amount:</strong> {poolData.amount2}
+            </p>
+            <p className="text-gray-700">
+              <strong>Total Shares:</strong>{" "}
+              {parseFloat(poolData.totalShares).toFixed(4)}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <SwapModal />
     </div>
   );
 };

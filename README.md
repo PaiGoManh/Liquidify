@@ -89,10 +89,6 @@ Users can swap one token for another, subject to a 0.3% fee.
 
 ---
 
-## 🚀 Live Demo
-
-Check out the live application deployed on Vercel:
-- ✨ Demo URL: 
   
 
 ## 🚀 Screen Recording

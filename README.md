@@ -96,7 +96,7 @@ Check out the live application deployed on Vercel:
   
 
 ## 🚀 Screen Recording
-<a href="https://drive.google.com/file/d/1c2y5kVN_iWmOrn7753gWPjdgI7PsI-Pn/view?usp=drive_link"><img src="https://www.google.com/imgres?q=playing%20%20video%20images%20&imgurl=https%3A%2F%2Fwww.shutterstock.com%2Fimage-vector%2Fvideo-player-interface-isolated-on-260nw-1905828769.jpg&imgrefurl=https%3A%2F%2Fwww.shutterstock.com%2Fsearch%2Fvideo-play&docid=m9KABld24XWs1M&tbnid=I7rGenn-RTPYDM&vet=12ahUKEwiR0df8sf2KAxW_TmwGHWaBHSAQM3oFCIcBEAA..i&w=426&h=280&hcb=2&ved=2ahUKEwiR0df8sf2KAxW_TmwGHWaBHSAQM3oFCIcBEAA"/></a>
+<a href="https://drive.google.com/file/d/1c2y5kVN_iWmOrn7753gWPjdgI7PsI-Pn/view?usp=drive_link"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS1cptlbzAskGrPmTmoI-v3tPLZjTgOQF4uuQ&s"/></a>
 
 
 

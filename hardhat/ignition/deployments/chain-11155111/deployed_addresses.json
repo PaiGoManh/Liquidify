@@ -1,3 +1,6 @@
 {
-  "LiquidityPoolModule#LiquidityPool": "0x053f2163e95dA1AA03300dc9deF547DDcdFD244a"
+  "TokenADeployment#TokenA": "0xA3183705B6A60A68EE15eF01714F5851C4720Bcf",
+  "TokenBDeployment#TokenB": "0xEc73ef4F29373A492dB5350e925B8847334A8a84",
+  "SwapModule#TokenSwap": "0x149c5602Dec96B8c1Be58d3DB4F3f04244Cd2718",
+  "LiquidityModule#LiquidityPool": "0x6B4ccdb95cb023b040A7c9aAc5dae986f8AC2976"
 }

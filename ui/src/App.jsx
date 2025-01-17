@@ -1,8 +1,9 @@
 import React,{useState} from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import AddTokens from "./Components/AddTokens";
-import LiquidityPool from "./Components/LiquidityPool";
 import Swap from "./Components/Swap";
+import TokenList from "./Components/TokenList";
+import AddLiquidity from "./Components/AddLiquidity";
+import RemoveLiquidity from "./Components/RemoveLiquidity";
 
 const App = () => {
   const [walletAddress, setWalletAddress] = useState(""); 
@@ -28,33 +29,39 @@ const App = () => {
       <Router>
         <div className="w-screen h-screen bg-gray-800">
           <div className="mx-[5%] py-[3%] flex text-white justify-between">
-            <div className="font-bold text-3xl ">Peer2Play</div>
+            <div className="font-bold text-3xl text-purple-700">Peer2Play</div>
             <div className="flex gap-5 ">
               {/* <Link to="/token">
                 <button className="w-[150px] h-10 bg-black ring-2 ring-white text-l font-bold  ">
-                  Add Tokens
+                  Tokens
                 </button>
               </Link> */}
               
               <Link to="/swap">
-                <button className="w-[150px] h-10 bg-black ring-2 ring-white text-l font-bold  ">
+                <button className="w-[150px] h-10 bg-black ring-2 ring-purple-700 text-l font-bold  ">
                   Swap
                 </button>
               </Link>
-              <Link to="/pool">
-                <button className="w-[150px] h-10 bg-black ring-2 ring-white text-l font-bold  ">
-                  Liquidity Pool
+              <Link to="/add">
+                <button className="w-[150px] h-10 bg-black ring-2 ring-purple-700 text-l font-bold  ">
+                  Add Liquidity
+                </button>
+              </Link>
+
+              <Link to="/remove">
+                <button className="w-[150px] h-10 bg-black ring-2 ring-purple-700 text-l font-bold  ">
+                  Remove Liquidity
                 </button>
               </Link>
             </div>
             {walletAddress ? (
-              <div className="w-[250px] h-10 bg-green-500 text-white text-center flex items-center justify-center">
+              <div className="w-[250px] h-10 bg-purple-700 text-white text-center flex items-center justify-center hover:bg-black">
                 Connected: {walletAddress.slice(0, 6)}...
                 {walletAddress.slice(-4)}
               </div>
             ) : (
               <button
-                className="w-[130px] h-10 bg-blue-500 ring-2 ring-white"
+                className="w-[130px] h-10 bg-purple-700 ring-2 ring-purple-700 hover:bg-black"
                 onClick={connectWallet}
               >
                 Connect Wallet
@@ -64,9 +71,11 @@ const App = () => {
 
           <div className="text-white mx-[5%]">
             <Routes>
-              <Route path="/token" element={<AddTokens />} />
-              <Route path="/pool" element={<LiquidityPool />} />
+              <Route path="/token" element={<TokenList />} />
+              <Route path="/add" element={<AddLiquidity />} />
               <Route path="/swap" element={<Swap />} />
+              <Route path="/remove" element={<RemoveLiquidity/>} />
+
             </Routes>
           </div>
         </div>

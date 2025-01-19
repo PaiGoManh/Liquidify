@@ -7,7 +7,7 @@ A decentralized AMM protocol for swapping ERC-20 tokens with liquidity managemen
 ## 🚀 Features
 
 - **Liquidity Provision:**  
-  Users can provide liquidity to the pool by depositing two tokens in a specified ratio, earning shares that represent their stake in the pool.
+  Users can provide liquidity to the pool by depositing two tokens in a specified ratio, earning shares that represent their stake in the pool .
 
 - **Liquidity Removal:**  
   Users can withdraw their liquidity from the pool, receiving their proportional share of both tokens.

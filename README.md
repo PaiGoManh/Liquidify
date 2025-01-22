@@ -1,6 +1,6 @@
 # Liquidify
 
-A decentralized AMM protocol for swapping ERC-20 tokens with liquidity management. The app, built in Solidity and React, follows Uniswap-like principles, providing users with easy token swaps and liquidity addition/removal via a user-friendly interface.
+A decentralized AMM protocol for swapping ERC-20 tokens with liquidity management . The app, built in Solidity and React, follows Uniswap-like principles, providing users with easy token swaps and liquidity addition/removal via a user-friendly interface.
 
 ---
 

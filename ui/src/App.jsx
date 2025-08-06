@@ -1,4 +1,4 @@
-import React,{ useState } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Swap from "./Components/Swap";
 import TokenList from "./Components/TokenList";
@@ -6,94 +6,55 @@ import AddLiquidity from "./Components/AddLiquidity";
 import RemoveLiquidity from "./Components/RemoveLiquidity";
 import Pool from "./Components/Pool";
 import PoolDetails from "./Components/Pooldetails";
+import ContactUs from "./Components/ContactUs";
 import { TokenProvider } from './Context/TokenContext';
 
 const App = () => {
-  const [walletAddress, setWalletAddress] = useState(""); 
-
-  const connectWallet = async () => {
-    if (window.ethereum) {
-      try {
-        const accounts = await window.ethereum.request({
-          method: "eth_requestAccounts",
-        });
-        setWalletAddress(accounts[0]);
-        console.log("Connected account:", accounts[0]);
-      } catch (error) {
-        console.error("Error connecting to wallet:", error);
-      }
-    } else {
-      alert("MetaMask not found. Please install MetaMask to use this app.");
-    }
-  };
   return (
     <>
-     <TokenProvider>
-      <Router>
-        <div className="w-screen h-screen bg-blue-200">
-          <div className="mx-[5%] py-[3%] flex text-white justify-between">
-            <div className="font-bold text-3xl text-black">Peer2Play</div>
-            <div className="flex gap-5 -mr-10">
+      <TokenProvider>
+        <Router>
+          <div className="w-screen h-screen bg-blue-200 flex flex-col">
+            <div className="mx-[5%] py-[3%] flex justify-between items-center text-white">
+              <div className="font-bold text-3xl text-black">Peer2Play</div>
+              <div className="flex flex-1 justify-center gap-6">
+                {/* Centered Swap and Pool buttons */}
+                <Link to="/">
+                  <button className="w-[150px] h-10 bg-purple-700 ring-2 ring-purple-700 text-lg font-bold rounded-full hover:bg-purple-800 transition">
+                    Swap
+                  </button>
+                </Link>
 
-              {/* <Link to="/token">
-                <button className="w-[150px] h-10 bg-black ring-2 ring-white text-l font-bold  ">
-                  Tokens
-                </button>
-              </Link> */}
-              
-              <Link to="/">
-                <button className="w-[150px] h-10 bg-purple-700 ring-2 ring-purple-700 text-l font-bold rounded-full ">
-                  Swap
-                </button>
-              </Link>
-
-              <Link to="/pool">
-                <button className="w-[150px] h-10 bg-purple-700 ring-2 ring-purple-700 text-l font-bold rounded-full ">
-                  Pool
-                </button>
-              </Link>
-
-              {/* <Link to="/add">
-                <button className="w-[150px] h-10 bg-purple-700 ring-2 ring-purple-700 text-l font-bold rounded-full ">
-                  Add Liquidity
-                </button>
-              </Link>
-
-              <Link to="/remove">
-                <button className="w-[150px] h-10 bg-purple-700 ring-2 ring-purple-700 text-l font-bold rounded-full ">
-                  Remove Liquidity
-                </button>
-              </Link> */}
-
-            </div>
-            {walletAddress ? (
-              <div className="-mr-10 w-[250px] h-10 bg-purple-700 text-white text-center flex items-center justify-center hover:bg-black">
-                Connected: {walletAddress.slice(0, 6)}...
-                {walletAddress.slice(-4)}
+                <Link to="/pool">
+                  <button className="w-[150px] h-10 bg-purple-700 ring-2 ring-purple-700 text-lg font-bold rounded-full hover:bg-purple-800 transition">
+                    Pool
+                  </button>
+                </Link>
               </div>
-            ) : (
-              <button
-                className="w-[130px] h-10 bg-purple-700 ring-2 ring-purple-700 hover:bg-black"
-                onClick={connectWallet}
-              >
-                Connect Wallet
-              </button>
-            )}
-          </div>
 
-          <div className="text-white mx-[5%]">
-            <Routes>
-              <Route path="/token" element={<TokenList />} />
-              <Route path="/add" element={<AddLiquidity />} />
-              <Route path="/" element={<Swap />} />
-              <Route path="/remove" element={<RemoveLiquidity/>} />
-              <Route path="/pool" element={<Pool/>} />
-              <Route path="/pool/:poolAddress" element={<PoolDetails />} />
+              {/* Contact Us button styled differently, on the right side */}
+              <div>
+                <Link to="/contact">
+                  <button className="w-[150px] h-10 bg-yellow-400 text-black font-semibold rounded-md shadow-md hover:bg-yellow-300 transition">
+                    Contact Us
+                  </button>
+                </Link>
+              </div>
+            </div>
 
-            </Routes>
+            <div className="text-white mx-[5%] flex-grow overflow-auto">
+              <Routes>
+                <Route path="/token" element={<TokenList />} />
+                <Route path="/add" element={<AddLiquidity />} />
+                <Route path="/" element={<Swap />} />
+                <Route path="/remove" element={<RemoveLiquidity />} />
+                <Route path="/pool" element={<Pool />} />
+                <Route path="/pool/:poolAddress" element={<PoolDetails />} />
+                <Route path="/contact" element={<ContactUs />} />
+              </Routes>
+            </div>
           </div>
-        </div>
-      </Router>
+        </Router>
       </TokenProvider>
     </>
   );
